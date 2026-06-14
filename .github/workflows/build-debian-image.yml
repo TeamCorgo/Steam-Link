@@ -1,19 +1,6 @@
-name: Build Debian Image
+name: Build Bookworm into Trixie Image
 on:
   workflow_dispatch:
-    inputs:
-      kernel_version:
-        description: "Kernel version to build"
-        required: true
-        default: "5.10.228"
-      kernel_branch:
-        description: "Kernel branch to build"
-        required: true
-        default: "v5.x"
-      debian_version:
-        description: "Debian version to use"
-        required: true
-        default: "bullseye"
 
 jobs:
   build-kernel:
@@ -33,33 +20,33 @@ jobs:
           submodules: "true"
 
       - name: Download Kernel
-        run: wget https://cdn.kernel.org/pub/linux/kernel/${{ inputs.kernel_branch }}/linux-${{ inputs.kernel_version }}.tar.xz
+        run: wget https://cdn.kernel.org/pub/linux/kernel/v6.x/linux-6.1.115.tar.xz
 
       - name: Extract Kernel
-        run: tar -xf linux-${{ inputs.kernel_version }}.tar.xz
+        run: tar -xf linux-6.1.115.tar.xz
 
       - name: Copy Kernel Config
-        run: cp ./kernel/${{ inputs.kernel_version }}.config ./linux-${{ inputs.kernel_version }}/.config
+        run: cp ./kernel/6.1.115.config ./linux-6.1.115/.config
 
       - name: Build Kernel
         env:
-          KERNEL_VERSION: ${{ inputs.kernel_version }}
+          KERNEL_VERSION: 6.1.115
         run: ./kernel/build.sh
 
       - name: Prepare Artifacts
-        working-directory: linux-${{ inputs.kernel_version }}
+        working-directory: linux-6.1.115
         run: |
-          mv /tmp/build-modules/lib/modules/${{ inputs.kernel_version }}-steam ../boot/
+          mv /tmp/build-modules/lib/modules/6.1.115-steam ../boot/
           mv arch/arm/boot/zImage ../boot/
           mv $(find . -name berlin2cd-valve-steamlink.dtb) ../boot/
-          mv .config ../boot/config-${{ inputs.kernel_version }}-steam
-          rm -rf ../boot/${{ inputs.kernel_version }}-steam/build
-          rm -rf ../boot/${{ inputs.kernel_version }}-steam/source
+          mv .config ../boot/config-6.1.115-steam
+          rm -rf ../boot/6.1.115-steam/build
+          rm -rf ../boot/6.1.115-steam/source
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: kernel-${{ inputs.kernel_version }}-steam
+          name: kernel-6.1.115-steam
           path: boot/
 
   build-rootfs:
@@ -82,11 +69,11 @@ jobs:
 
       - uses: actions/download-artifact@master
         with:
-          name: kernel-${{ inputs.kernel_version }}-steam
-          path: kernel-${{ inputs.kernel_version }}
+          name: kernel-6.1.115-steam
+          path: kernel-6.1.115
 
       - name: Build RootFS Docker Image
-        run: docker buildx build --platform linux/arm/v7 --build-arg KERNEL_VERSION=${{ inputs.kernel_version }} --build-arg DEBIAN_VERSION=${{ inputs.debian_version }} --rm -f rootfs/Dockerfile --tag steamlink-debian:latest --output type=docker,dest=steamlink-debian.tar .
+        run: docker buildx build --platform linux/arm/v7 --rm -f rootfs/Dockerfile --tag steamlink-debian:latest --output type=docker,dest=steamlink-debian.tar .
 
       - name: Create RootFS tarball
         run: |
@@ -97,7 +84,7 @@ jobs:
       - name: Upload RootFS tarball
         uses: actions/upload-artifact@v4
         with:
-          name: steamlink-debian-${{ inputs.debian_version }}-${{ inputs.kernel_version }}-rootfs
+          name: steamlink-debian-bookworm-6.1.115-rootfs
           path: rootfs.tar
 
       - name: Create disk image
@@ -105,10 +92,10 @@ jobs:
 
       - name: Prepare compressed disk image
         run: |
-          mv steamlink-debian.img.xz steamlink-debian-${{ inputs.debian_version }}-${{ inputs.kernel_version }}.img.xz
+          mv steamlink-debian.img.xz steamlink-debian-bookworm-6.1.115.img.xz
 
       - name: Upload disk image
         uses: actions/upload-artifact@v4
         with:
-          name: steamlink-debian-${{ inputs.debian_version }}-${{ inputs.kernel_version }}-image
-          path: steamlink-debian-${{ inputs.debian_version }}-${{ inputs.kernel_version }}.img.xz
+          name: steamlink-debian-bookworm-6.1.115-image
+          path: steamlink-debian-bookworm-6.1.115.img.xz
