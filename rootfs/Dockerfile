@@ -44,9 +44,4 @@ RUN apt dist-upgrade -y
 RUN apt-get update
 RUN apt-get upgrade
 
-RUN apt autoremove -y
 RUN apt-get --yes clean
-
-# Set a temp device hostname
-RUN echo steamlink > /etc/hostname && \
-    echo "127.0.0.1 steamlink" >> /etc/hosts
