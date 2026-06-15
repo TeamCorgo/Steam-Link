@@ -82,3 +82,36 @@ This might take a while, depending on your disk size.
 - [Getting Linux on Valve Steam Link from heap.ovh](https://heap.ovh/getting-linux-on-valve-steam-link.html)
 - [Docker Debian bootstrap script from v86 project](https://github.com/copy/v86)
 - [regmibijay/steamlink-archlinux GitHub repository](https://github.com/regmibijay/steamlink-archlinux)
+
+
+## Tailscale setup
+
+```
+# Install tailscale (From Tailscale Web)
+curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up --auth-key=tskey-auth-XXXXX
+
+# Start Tailscale & setup a Route
+sudo systemctl start tailscaled 
+sudo tailscale up --advertise-routes=192.168.200.0/21 --accept-routes
+
+# Enable routing
+sudo tee /etc/sysctl.d/99-tailscale.conf <<EOF
+net.ipv4.ip_forward=1
+net.ipv6.conf.all.forwarding=1
+EOF
+
+# Apply the new routing
+sudo sysctl --system
+
+# Switch iptables to legacy version
+sudo update-alternatives --config iptables
+
+# Setup a network router
+sudo iptables -t nat -A POSTROUTING \
+    -d 10.0.0.0/23 \
+    -o tailscale0 \
+    -j MASQUERADE
+
+# Setup iptables persistent
+sudo apt install iptables-persistent
+```
