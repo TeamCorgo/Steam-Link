@@ -53,6 +53,11 @@ sudo hostnamectl set-hostname steamlink
 echo '127.0.0.1 steamlink' | sudo tee -a /etc/hosts
 ```
 
+### Upgrade from slim to standard
+```bash
+sudo tasksel install standard
+```
+
 ### Resize root partition to full disk size
 
 Resize the partition to take the entire space:

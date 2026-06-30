@@ -14,7 +14,6 @@ RUN echo "deb http://deb.debian.org/debian bookworm-updates main non-free non-fr
 
 # Install basic system components
 RUN apt-get update && apt-get install -y --no-install-recommends systemd systemd-timesyncd dbus ca-certificates dhcpcd5 nano vim openssh-server sudo ifupdown net-tools udev iputils-ping wget dosfstools unzip binutils libatomic1 initramfs-tools e2fsprogs parted firmware-libertas wireless-regdb dialog tasksel
-RUN tasksel install standard
 
 # Create initramfs
 RUN mkinitramfs -o /boot/initramfs-linux-steam.img 6.1.115-steam
