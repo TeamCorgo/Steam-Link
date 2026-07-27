@@ -97,7 +97,7 @@ curl -fsSL https://tailscale.com/install.sh | sh && sudo tailscale up --auth-key
 
 # Start Tailscale & setup a Route
 sudo systemctl start tailscaled 
-sudo tailscale up --advertise-routes=192.168.200.0/21 --accept-routes
+sudo tailscale up --advertise-routes=###.###.###.0/## --accept-routes
 
 # Enable routing
 sudo tee /etc/sysctl.d/99-tailscale.conf <<EOF
